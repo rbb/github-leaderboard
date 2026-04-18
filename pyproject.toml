@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "github-leaderboard"
+version = "0.1.0"
+description = "GitHub topic leaderboard generator"
+requires-python = ">=3.12"
+dependencies = [
+    "ghapi>=1.0.4",
+    "PyYAML>=6.0",
+    "requests",
+    "python-snappy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-recording>=0.13",
+    "vcrpy>=6.0",
+    "ruff>=0.4",
+    "pandas",
+    "gspread",
+]
+
+[project.scripts]
+github-leaderboard = "github_leaderboard.cli:main"
+csv-html = "github_leaderboard.csv_html:main"
+csv-grafana = "github_leaderboard.csv_grafana:main"
+csv-gsheet = "github_leaderboard.csv_gsheet:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
