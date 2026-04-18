@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 import logging
-import math
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
 
 from ghapi.all import GhApi, paged
@@ -14,8 +16,9 @@ from .scorer import RepoMetrics
 
 logger = logging.getLogger(__name__)
 
-_TREND_PAGE_CAP = 5
-_STARS_PER_PAGE = 100
+_TREND_STARS_PER_PAGE = 100
+_TREND_MAX_PAGES = 100  # cap at 10,000 recent stars per repo
+_GRAPHQL_URL = "https://api.github.com/graphql"
 
 
 def _iso(dt: datetime) -> str:
@@ -114,48 +117,64 @@ def _fetch_prs(api: GhApi, owner: str, repo: str, since: datetime) -> tuple[int 
     return active, merged
 
 
+_TREND_QUERY = """
+query($owner: String!, $repo: String!, $cursor: String) {
+  repository(owner: $owner, name: $repo) {
+    stargazers(first: 100, orderBy: {field: STARRED_AT, direction: DESC}, after: $cursor) {
+      pageInfo { hasNextPage endCursor }
+      edges { starredAt }
+    }
+  }
+}
+"""
+
+
+@retry_with_backoff
+def _graphql(auth_header: str, variables: dict) -> dict:
+    req = urllib.request.Request(
+        _GRAPHQL_URL,
+        data=json.dumps({"query": _TREND_QUERY, "variables": variables}).encode(),
+        headers={"Authorization": auth_header, "Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read())
+
+
 def _fetch_trend(api: GhApi, owner: str, repo: str, since: datetime, total_stars: int) -> float | None:
-    """Compute trend = stars_gained_in_window (capped at 5 pages)."""
+    """Count stars gained in the window via GraphQL (newest-first, pagination not capped at 40k)."""
     if total_stars == 0:
         return 0.0
+    auth_header = api.headers.get("Authorization", "")
+    gained = 0
+    cursor: str | None = None
     try:
-        last_page = max(1, math.ceil(total_stars / _STARS_PER_PAGE))
-        start_page = max(1, last_page - _TREND_PAGE_CAP + 1)
-
-        gained = 0
-        for p in range(last_page, start_page - 1, -1):
-            try:
-                logger.debug("stars page %d/%d %s/%s", p, last_page, owner, repo)
-                resp = api.activity.list_stargazers_for_repo(
-                    owner=owner,
-                    repo=repo,
-                    per_page=_STARS_PER_PAGE,
-                    page=p,
-                    headers={"Accept": "application/vnd.github.star+json"},
-                )
-            except Exception as page_exc:
-                code = getattr(page_exc, "status", None) or getattr(page_exc, "code", None)
-                if str(code) == "422" or "422" in str(page_exc):
-                    # Pagination limit hit; try an earlier page
-                    last_page = max(1, p - 1)
+        for page in range(1, _TREND_MAX_PAGES + 1):
+            variables: dict = {"owner": owner, "repo": repo, "cursor": cursor}
+            payload = _graphql(auth_header, variables)
+            if "errors" in payload:
+                logger.warning("GraphQL errors for %s/%s: %s", owner, repo, payload["errors"])
+                return None
+            sg = payload["data"]["repository"]["stargazers"]
+            edges = sg["edges"]
+            if not edges:
+                break
+            for edge in edges:
+                starred_at_str = edge.get("starredAt")
+                if not isinstance(starred_at_str, str):
                     continue
-                raise
-            if not resp:
+                if _parse_dt(starred_at_str) < since:
+                    return float(gained)
+                gained += 1
+            if not sg["pageInfo"]["hasNextPage"]:
                 break
-            all_before = True
-            for star in resp:
-                starred_at_str = (
-                    star.get("starred_at") if isinstance(star, dict)
-                    else getattr(star, "starred_at", None)
-                )
-                if isinstance(starred_at_str, str) and starred_at_str:
-                    starred_at = _parse_dt(starred_at_str)
-                    if starred_at >= since:
-                        gained += 1
-                        all_before = False
-            if all_before:
-                break
-
+            cursor = sg["pageInfo"]["endCursor"]
+            logger.debug("stargazer trend page %d for %s/%s (gained=%d)", page, owner, repo, gained)
+        else:
+            logger.info(
+                "Trend page cap (%d) reached for %s/%s; reported count is a lower bound",
+                _TREND_MAX_PAGES, owner, repo,
+            )
         return float(gained)
     except Exception as exc:
         logger.warning("Failed to fetch stargazer trend for %s/%s: %s", owner, repo, exc)
