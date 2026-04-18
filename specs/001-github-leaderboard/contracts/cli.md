@@ -51,13 +51,13 @@ default value for every flag.
 
 The tool reads the GitHub token from (in order):
 
-1. `.git_token` file in the current working directory (plain text; first line used)
+1. `.github_token` file in the current working directory (plain text; first line used)
 2. `GITHUB_TOKEN` environment variable
 
 If neither is present, the tool exits with code 1 and prints:
 
 ```
-Error: GitHub token not found. Create a .git_token file in the current directory
+Error: GitHub token not found. Create a .github_token file in the current directory
 or set the GITHUB_TOKEN environment variable.
 ```
 

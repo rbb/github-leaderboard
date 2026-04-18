@@ -64,7 +64,7 @@ src/
 └── github_leaderboard/
     ├── __init__.py
     ├── cli.py           # argparse setup; main() entry point; accepts args=None for testability
-    ├── auth.py          # Token loading: .git_token file → GITHUB_TOKEN env var
+    ├── auth.py          # Token loading: .github_token file → GITHUB_TOKEN env var
     ├── config.py        # YAML config loading, schema validation, MetricWeights dataclass
     ├── client.py        # GhApi wrapper: exponential backoff decorator, Search/REST rate-limit detection
     ├── fetcher.py       # Per-repo metric collection (stars, commits, PRs, trend, clones)
@@ -85,7 +85,7 @@ tests/
 pyproject.toml
 README.md
 git-leaderboard.yml      # Example config (committed; user copies and edits)
-.gitignore               # Includes: leaderboard.csv, .git_token, *.csv
+.gitignore               # Includes: leaderboard.csv, .github_token, *.csv
 ```
 
 **Structure Decision**: Single-project layout under `src/` (Python packaging best practice

@@ -17,10 +17,10 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project structure (src/github_leaderboard/, tests/unit/, tests/integration/) per implementation plan
-- [ ] T002 Initialize pyproject.toml with dependencies (ghapi, PyYAML, pytest, pytest-recording)
-- [ ] T003 [P] Create .gitignore with leaderboard.csv, .git_token, *.csv, and __pycache__
-- [ ] T004 [P] Create README.md with installation and basic usage instructions
+- [X] T001 Create project structure (src/github_leaderboard/, tests/unit/, tests/integration/) per implementation plan
+- [X] T002 Initialize pyproject.toml with dependencies (ghapi, PyYAML, pytest, pytest-recording)
+- [X] T003 [P] Create .gitignore with leaderboard.csv, .github_token, *.csv, and __pycache__
+- [X] T004 [P] Create README.md with installation and basic usage instructions
 
 ---
 
@@ -30,11 +30,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 [P] Implement auth.py for token loading from .git_token file or GITHUB_TOKEN env var
-- [ ] T006 [P] Implement client.py with GhApi wrapper and exponential backoff decorator (Decision 2)
-- [ ] T007 [P] Implement basic config.py for AppConfig and MetricWeights dataclasses (Data Model)
-- [ ] T008 [P] Setup logging infrastructure in cli.py with human/json support and log-level flags (FR-011)
-- [ ] T009 [P] Create tests/conftest.py for shared pytest fixtures (mocking GhApi)
+- [X] T005 [P] Implement auth.py for token loading from .github_token file or GITHUB_TOKEN env var
+- [X] T006 [P] Implement client.py with GhApi wrapper and exponential backoff decorator (Decision 2)
+- [X] T007 [P] Implement basic config.py for AppConfig and MetricWeights dataclasses (Data Model)
+- [X] T008 [P] Setup logging infrastructure in cli.py with human/json support and log-level flags (FR-011)
+- [X] T009 [P] Create tests/conftest.py for shared pytest fixtures (mocking GhApi)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -50,17 +50,17 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US1] Unit tests for scorer math and tie-breaking in tests/unit/test_scorer.py
-- [ ] T011 [P] [US1] Unit tests for auth token loading and precedence in tests/unit/test_auth.py
-- [ ] T012 [P] [US1] Integration tests for topic search and happy-path API interactions (VCR) in tests/integration/test_client.py
+- [X] T010 [P] [US1] Unit tests for scorer math and tie-breaking in tests/unit/test_scorer.py
+- [X] T011 [P] [US1] Unit tests for auth token loading and precedence in tests/unit/test_auth.py
+- [X] T012 [P] [US1] Integration tests for topic search and happy-path API interactions (VCR) in tests/integration/test_client.py
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Implement scorer.py for weighted score calculation (rounded to 2 decimal places) and tie-breaking (stars descending)
-- [ ] T014 [P] [US1] Implement writer.py for CSV output with fixed column order and header (FR-007)
-- [ ] T015 [US1] Implement fetcher.py for metric collection including stars, commits (since window), PRs, trend (5-page cap), and clones (403 fallback)
-- [ ] T016 [US1] Implement cli.py entry point with argparse for --topic, --top, --window, --output, and execution flow
-- [ ] T017 [US1] Add validation for --top (1-50) and --window (1-14) in config.py or cli.py
+- [X] T013 [P] [US1] Implement scorer.py for weighted score calculation (rounded to 2 decimal places) and tie-breaking (stars descending)
+- [X] T014 [P] [US1] Implement writer.py for CSV output with fixed column order and header (FR-007)
+- [X] T015 [US1] Implement fetcher.py for metric collection including stars, commits (since window), PRs, trend (5-page cap), and clones (403 fallback)
+- [X] T016 [US1] Implement cli.py entry point with argparse for --topic, --top, --window, --output, and execution flow
+- [X] T017 [US1] Add validation for --top (1-50) and --window (1-14) in config.py or cli.py
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently (MVP)
 
@@ -74,14 +74,14 @@
 
 ### Tests for User Story 2 (REQUIRED per TDD) ⚠️
 
-- [ ] T018 [P] [US2] Unit tests for target list file parsing, deduplication, and malformed entry handling in tests/unit/test_cli.py
-- [ ] T019 [P] [US2] Integration test for list mode API interactions (VCR) in tests/integration/test_client.py
+- [X] T018 [P] [US2] Unit tests for target list file parsing, deduplication, and malformed entry handling in tests/unit/test_cli.py
+- [X] T019 [P] [US2] Integration test for list mode API interactions (VCR) in tests/integration/test_client.py
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Implement target list file parsing logic in cli.py or a new utility module (support comments and blank lines)
-- [ ] T021 [US2] Add mutually exclusive validation for --topic and --list in cli.py (FR-001)
-- [ ] T022 [US2] Integrate list mode repository source into the main execution flow in cli.py
+- [X] T020 [US2] Implement target list file parsing logic in cli.py or a new utility module (support comments and blank lines)
+- [X] T021 [US2] Add mutually exclusive validation for --topic and --list in cli.py (FR-001)
+- [X] T022 [US2] Integrate list mode repository source into the main execution flow in cli.py
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -95,14 +95,14 @@
 
 ### Tests for User Story 3 (REQUIRED per TDD) ⚠️
 
-- [ ] T023 [P] [US3] Unit tests for config file validation (YAML syntax, missing weights, unknown keys, range -1 to 1) in tests/unit/test_config.py
-- [ ] T024 [P] [US3] Integration test for custom weight configuration impact (VCR) in tests/integration/test_client.py
+- [X] T023 [P] [US3] Unit tests for config file validation (YAML syntax, missing weights, unknown keys, range -1 to 1) in tests/unit/test_config.py
+- [X] T024 [P] [US3] Integration test for custom weight configuration impact (VCR) in tests/integration/test_client.py
 
 ### Implementation for User Story 3
 
-- [ ] T025 [US3] Implement YAML configuration loading and schema validation in config.py (FR-009)
-- [ ] T026 [US3] Implement default weight handling (0.0 for missing keys) and unknown key detection in config.py
-- [ ] T027 [US3] Integrate --config flag and weight loading into the startup sequence in cli.py
+- [X] T025 [US3] Implement YAML configuration loading and schema validation in config.py (FR-009)
+- [X] T026 [US3] Implement default weight handling (0.0 for missing keys) and unknown key detection in config.py
+- [X] T027 [US3] Integrate --config flag and weight loading into the startup sequence in cli.py
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -112,11 +112,11 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T028 [P] Implement JSON log format option in cli.py (FR-011)
-- [ ] T029 [P] Add INFO-level progress messages (e.g., "Processing repo 3/25...") in fetcher.py
-- [ ] T030 [P] Create Dockerfile for the github-leaderboard console script (FR-017)
-- [ ] T031 Implement partial CSV write behavior when rate-limit retries are exhausted (FR-020)
-- [ ] T032 [P] Run all validation scenarios from quickstart.md and confirm deterministic output
+- [X] T028 [P] Implement JSON log format option in cli.py (FR-011)
+- [X] T029 [P] Add INFO-level progress messages (e.g., "Processing repo 3/25...") in fetcher.py
+- [X] T030 [P] Create Dockerfile for the github-leaderboard console script (FR-017)
+- [X] T031 Implement partial CSV write behavior when rate-limit retries are exhausted (FR-020)
+- [X] T032 [P] Run all validation scenarios from quickstart.md and confirm deterministic output
 
 ---
 

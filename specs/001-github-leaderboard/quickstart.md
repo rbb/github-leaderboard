@@ -32,10 +32,10 @@ RUN pip install .
 
 ## Authentication
 
-Create a `.git_token` file in your working directory (it's in `.gitignore`):
+Create a `.github_token` file in your working directory (it's in `.gitignore`):
 
 ```bash
-echo "ghp_yourPersonalAccessTokenHere" > .git_token
+echo "ghp_yourPersonalAccessTokenHere" > .github_token
 ```
 
 Or export the environment variable:
@@ -133,10 +133,10 @@ Repositories with unavailable metrics appear with empty fields. Score is rounded
 
 **Missing token**
 ```
-Error: GitHub token not found. Create a .git_token file in the current directory
+Error: GitHub token not found. Create a .github_token file in the current directory
 or set the GITHUB_TOKEN environment variable.
 ```
-→ Create `.git_token` or `export GITHUB_TOKEN=...`
+→ Create `.github_token` or `export GITHUB_TOKEN=...`
 
 **Invalid config**
 ```

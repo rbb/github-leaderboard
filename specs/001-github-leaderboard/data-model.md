@@ -109,7 +109,7 @@ all pipeline stages.
 | `log_format` | `Literal['human', 'json']` | `--log-format` flag | `'human'` |
 | `log_level` | `str` | `--log-level` flag | `'WARNING'` |
 | `weights` | `MetricWeights` | Config file | — |
-| `token` | `str` | `.git_token` → `GITHUB_TOKEN` | — |
+| `token` | `str` | `.github_token` → `GITHUB_TOKEN` | — |
 
 **Validation sequence** (all before any API call):
 1. Exactly one of `topic` or `target_list` is set (exit 1 otherwise).
