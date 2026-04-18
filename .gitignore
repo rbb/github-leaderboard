@@ -1,0 +1,33 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+.eggs/
+*.egg
+
+# Tool outputs
+leaderboard.csv
+*.csv
+
+# Auth token
+.github_token
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+tests/integration/cassettes/*.yaml
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+.google_token.json
+.grafana_token
