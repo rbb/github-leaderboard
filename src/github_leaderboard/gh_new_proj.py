@@ -34,7 +34,7 @@ def find_new_projects(file_a, file_b, output_file):
         print(f"An unexpected error occurred: {e}")
         sys.exit(1)
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Find GitHub projects in file B that aren't in file A.")
     
     parser.add_argument("-a", default="websites.txt", 
@@ -47,3 +47,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     find_new_projects(args.a, args.b, args.o)
+
+if __name__ == "__main__":
+    fetch_and_save_repos()
