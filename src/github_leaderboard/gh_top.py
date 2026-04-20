@@ -2,9 +2,12 @@ import requests
 import argparse
 import sys
 
-def fetch_and_save_repos():
+def main():
     # 1. Set up Command Line Arguments
-    parser = argparse.ArgumentParser(description="Fetch GitHub repository names and save to a file.")
+    parser = argparse.ArgumentParser(
+        description="Fetch GitHub repository names and save to a file.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        )
     
     parser.add_argument(
         "-u", "--url", 
