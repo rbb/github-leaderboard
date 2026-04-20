@@ -29,6 +29,8 @@ github-leaderboard = "github_leaderboard.cli:main"
 csv-html = "github_leaderboard.csv_html:main"
 csv-grafana = "github_leaderboard.csv_grafana:main"
 csv-gsheet = "github_leaderboard.csv_gsheet:main"
+gh-projects = "github_leaderboard.gh_projects:main"
+gh-new-proj = "github_leaderboard.gh_new_proj:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
