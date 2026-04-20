@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Convert a leaderboard CSV to a styled HTML file.
+"""Convert one or more leaderboard CSVs to a styled HTML file.
 
 Usage:
-    python csv_html.py leaderboard.csv
-    python csv_html.py leaderboard.csv -o report.html
-    python csv_html.py leaderboard.csv --title "My Leaderboard"
+    python csv_html.py -i leaderboard.csv
+    python csv_html.py -i a.csv b.csv -o report.html
+    python csv_html.py -i a.csv b.csv --title "My Leaderboard"
 """
 
 from __future__ import annotations
@@ -17,15 +17,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-def convert(src: Path, dst: Path, title: str) -> None:
+def _build_table(src: Path) -> str:
     rows = list(csv.DictReader(src.read_text(encoding="utf-8").splitlines()))
     if not rows:
-        dst.write_text("<p>No data.</p>", encoding="utf-8")
-        return
+        return f"<section><h2>{html.escape(src.name)}</h2><p>No data.</p></section>"
 
     columns = list(rows[0].keys())
-    generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-
     BAR_COLS = {"score", "trend", "commits"}
 
     def _top(col: str) -> float:
@@ -36,30 +33,59 @@ def convert(src: Path, dst: Path, title: str) -> None:
 
     col_max = {col: _top(col) for col in BAR_COLS if col in columns}
 
-    def cell(col: str, val: str, rank: int) -> str:
+    def _fmt(val: str) -> str:
+        try:
+            n = int(val)
+            return f"{n:,}"
+        except ValueError:
+            pass
+        try:
+            f = float(val)
+            return f"{f:,.2f}".rstrip("0").rstrip(".")
+        except ValueError:
+            return val
+
+    def cell(col: str, val: str) -> str:
         v = html.escape(val)
         if col == "repo":
             return f"<td class='repo'><a href='https://github.com/{v}' target='_blank' rel='noopener'>{v}</a></td>"
         if col in col_max and col_max[col]:
             try:
                 pct = float(val) / col_max[col] * 100
+                display = html.escape(_fmt(val))
                 return (
                     f"<td class='{col}'>"
                     f"<div class='bar-wrap'>"
                     f"<div class='bar' style='width:{pct:.1f}%'></div>"
-                    f"<span>{v}</span>"
+                    f"<span>{display}</span>"
                     f"</div></td>"
                 )
             except ValueError:
                 pass
-        return f"<td>{v}</td>"
+        return f"<td>{html.escape(_fmt(val))}</td>"
 
     header_html = "<th>#</th>" + "".join(f"<th>{html.escape(c)}</th>" for c in columns)
 
     body_rows = []
     for i, row in enumerate(rows, start=1):
-        cells = f"<td class='rank'>{i}</td>" + "".join(cell(c, row.get(c, ""), i) for c in columns)
+        cells = f"<td class='rank'>{i}</td>" + "".join(cell(c, row.get(c, "")) for c in columns)
         body_rows.append(f"<tr>{cells}</tr>")
+
+    return (
+        f"<section>"
+        f"<h2>{html.escape(src.name)}</h2>"
+        f"<p class='meta'>{len(rows)} repositories</p>"
+        f"<table>"
+        f"<thead><tr>{header_html}</tr></thead>"
+        f"<tbody>{''.join(body_rows)}</tbody>"
+        f"</table>"
+        f"</section>"
+    )
+
+
+def convert(sources: list[Path], dst: Path, title: str) -> None:
+    generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    tables = "\n".join(_build_table(src) for src in sources)
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -71,7 +97,9 @@ def convert(src: Path, dst: Path, title: str) -> None:
   *{{box-sizing:border-box;margin:0;padding:0}}
   body{{font-family:system-ui,sans-serif;background:#0d1117;color:#e6edf3;padding:2rem}}
   h1{{font-size:1.5rem;margin-bottom:.4rem;color:#58a6ff}}
+  h2{{font-size:1.2rem;margin:2rem 0 .4rem;color:#58a6ff}}
   .meta{{font-size:.8rem;color:#8b949e;margin-bottom:1.5rem}}
+  section{{margin-bottom:3rem}}
   table{{width:100%;border-collapse:collapse;font-size:.85rem}}
   th{{background:#161b22;color:#8b949e;text-align:left;padding:.5rem .75rem;
       border-bottom:1px solid #30363d;font-weight:600;white-space:nowrap}}
@@ -89,13 +117,8 @@ def convert(src: Path, dst: Path, title: str) -> None:
 </head>
 <body>
 <h1>{html.escape(title)}</h1>
-<p class="meta">Generated {generated} &middot; {len(rows)} repositories</p>
-<table>
-<thead><tr>{header_html}</tr></thead>
-<tbody>
-{"".join(body_rows)}
-</tbody>
-</table>
+<p class="meta">Generated {generated}</p>
+{tables}
 </body>
 </html>
 """
@@ -111,25 +134,25 @@ def main() -> None:
     )
     parser.add_argument(
         "-i", "--input",
-        default='leaderboard.csv',
-        type=Path, help="Input CSV file",
+        nargs='+',
+        default=['leaderboard.csv'],
+        type=Path,
+        help="Input CSV file(s); each gets its own table",
     )
     parser.add_argument(
         "-o", "--output",
         type=Path,
         default='leaderboard.html',
-        help="Output HTML file (default: <input>.html)",
-        )
+        help="Output HTML file",
+    )
     parser.add_argument("--title", default="GitHub Leaderboard", help="Page title")
     ns = parser.parse_args()
 
-    src: Path = ns.input
-    dst: Path = ns.output
+    missing = [p for p in ns.input if not p.exists()]
+    if missing:
+        parser.error(f"File(s) not found: {', '.join(str(p) for p in missing)}")
 
-    if not src.exists():
-        parser.error(f"File not found: {src}")
-
-    convert(src, dst, ns.title)
+    convert(ns.input, ns.output, ns.title)
 
 
 if __name__ == "__main__":
