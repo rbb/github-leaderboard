@@ -63,3 +63,31 @@ pip install -e ".[dev]"
 pytest tests/
 ruff check src/
 ```
+
+# Example data pipeline
+```bash
+#!/bin/bash
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+echo "Starting Leaderboard Pipeline..."
+
+# 1. Generate initial leaderboard
+github-leaderboard -n 50 -l websites.txt -o websites.csv
+
+# 2. Get existing projects
+gh-projects -o gh_projects.txt
+
+# 3. Compare and find new projects
+gh-new-proj -a websites.txt -b gh_projects.txt -o new_projects.txt
+
+# 4. Generate leaderboard for new projects
+github-leaderboard -n 10 -l new_projects.txt -o new_projects.csv
+
+# 5. Convert results to HTML
+csv-html -i websites.csv new_projects.csv -o leaderboard.html
+
+echo "Pipeline complete! Output generated in leaderboard.html"
+
+# scp leaderboard.html somewhere.
+```
